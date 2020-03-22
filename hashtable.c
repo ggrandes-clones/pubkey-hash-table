@@ -1,9 +1,11 @@
 /* Copyright (C) 2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved. */
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 #include <sys/random.h>
 
 struct entry {
@@ -116,6 +118,7 @@ static struct entry *find_or_insert_entry(uint8_t key[32])
 /* Just a small test */
 int main(int argc, char *argv[])
 {
+	struct timespec start, end;
 	uint8_t key[32] = { 0 };
 	int i;
 
@@ -127,6 +130,7 @@ int main(int argc, char *argv[])
 		entry->some_member = i ^ 0xffffffff;
 	}
 
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	for (i = 0; i < 1 << 20; ++i) {
 		struct entry *entry;
 
@@ -135,6 +139,8 @@ int main(int argc, char *argv[])
 		assert(entry);
 		assert(entry->some_member == i ^ 0xffffffff);
 	}
+	clock_gettime(CLOCK_MONOTONIC, &end);
 
+	printf("%s: %llu ns\n", argv[0], (end.tv_sec * 1000000000ULL + end.tv_nsec) - (start.tv_sec * 1000000000ULL + start.tv_nsec));
 	return 0;
 }
